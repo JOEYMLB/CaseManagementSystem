@@ -1,0 +1,12 @@
+<apex:page controller="TaskController">
+    <apex:form >
+        <apex:pageBlock title="My Open Tasks">
+            <apex:pageBlockTable value="{!tasks}" var="task">
+                <apex:column value="{!task.Subject}" headerValue="Task Subject"/>
+                <apex:column value="{!task.Status}" headerValue="Status"/>
+                <apex:column value="{!task.Priority}" headerValue="Priority"/>
+                <apex:column value="{!task.What.Name}" headerValue="Related Case"/>
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>
