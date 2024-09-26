@@ -1,0 +1,22 @@
+trigger CreateTaskOnHighPriorityCase on Support_Case__c (after insert) {
+    List<Task> tasksToCreate = new List<Task>();
+
+    for (Support_Case__c caseRecord : Trigger.new) {
+        // Check if the priority is High
+        if (caseRecord.Priority__c == 'High') {
+            // Create a Task for the assigned user
+            Task newTask = new Task();
+            newTask.Subject = 'Follow-up on High Priority Case: ' + caseRecord.Subject__c;
+            newTask.OwnerId = caseRecord.AssignedTo__c;
+            newTask.WhatId = caseRecord.Id;
+            newTask.Status = 'Not Started';
+            newTask.Priority = 'High';
+            tasksToCreate.add(newTask);
+        }
+    }
+    
+    // Insert all the tasks
+    if (!tasksToCreate.isEmpty()) {
+        insert tasksToCreate;
+    }
+}
