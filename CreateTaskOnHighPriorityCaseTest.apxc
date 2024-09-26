@@ -1,0 +1,40 @@
+@isTest
+public class CreateTaskOnHighPriorityCaseTest {
+    
+    @testSetup
+    static void setup() {
+        // Create a test user to assign cases to
+        Profile p = [SELECT Id FROM Profile WHERE Name='Standard User'];
+        User testUser = new User(Alias = 'testy992', Email='testuser@12243.com', 
+            EmailEncodingKey='UTF-8', LastName='User', LanguageLocaleKey='en_US', 
+            LocaleSidKey='en_US', ProfileId = p.Id, TimeZoneSidKey='America/New_York', 
+            UserName='testuser@12243.com');
+        insert testUser;
+    }
+    
+    @isTest
+    static void testTriggerForHighPriorityCase() {
+        // Fetch the test user
+        User testUser = [SELECT Id FROM User WHERE UserName='testuser@12243.com' LIMIT 1];
+        
+        // Create a new high-priority Support Case
+        Support_Case__c testCase = new Support_Case__c(
+            Subject__c = 'Test High Priority Case',
+            Description__c = 'Test Description',
+            Priority__c = 'High',
+            Status__c = 'New',
+            AssignedTo__c = testUser.Id
+        );
+        
+        Test.startTest();
+        insert testCase; // This will trigger the CreateTaskOnHighPriorityCase trigger
+        Test.stopTest();
+        
+        // Verify that a Task was created
+        Task createdTask = [SELECT Id, Subject, Priority, Status, OwnerId, WhatId FROM Task WHERE WhatId = :testCase.Id];
+        System.assertEquals('High', createdTask.Priority);
+        System.assertEquals('Not Started', createdTask.Status);
+        System.assertEquals('Follow-up on High Priority Case: Test High Priority Case', createdTask.Subject);
+        System.assertEquals(testUser.Id, createdTask.OwnerId);
+    }
+}
