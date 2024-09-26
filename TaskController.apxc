@@ -1,0 +1,10 @@
+public class TaskController {
+    public List<Task> tasks { get; set; }
+
+    // Constructor to get all open tasks assigned to the current user
+    public TaskController() {
+        tasks = [SELECT Subject, Status, Priority, What.Name 
+                 FROM Task 
+                 WHERE OwnerId = :UserInfo.getUserId() AND Status != 'Completed'];
+    }
+}
