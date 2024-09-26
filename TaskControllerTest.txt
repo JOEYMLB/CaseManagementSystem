@@ -1,0 +1,55 @@
+@isTest
+public class TaskControllerTest {
+    
+    @testSetup
+    static void setupTestData() {
+        // Get the current user
+        User currentUser = [SELECT Id FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+        
+        // Create some test tasks and assign them to the current user
+        List<Task> testTasks = new List<Task>();
+        
+        // Task 1: Open task (should be returned by the controller)
+        testTasks.add(new Task(
+            Subject = 'Open Task 1',
+            Status = 'Not Started',
+            Priority = 'High',
+            OwnerId = currentUser.Id
+        ));
+
+        // Task 2: Completed task (should not be returned by the controller)
+        testTasks.add(new Task(
+            Subject = 'Completed Task',
+            Status = 'Completed',
+            Priority = 'Low',
+            OwnerId = currentUser.Id
+        ));
+        
+        // Task 3: Open task (should be returned by the controller)
+        testTasks.add(new Task(
+            Subject = 'Open Task 2',
+            Status = 'In Progress',
+            Priority = 'Medium',
+            OwnerId = currentUser.Id
+        ));
+        
+        insert testTasks;
+    }
+    
+    @isTest
+    static void testTaskController() {
+        // Instantiate the TaskController
+        TaskController controller = new TaskController();
+        
+        // Get the tasks list from the controller
+        List<Task> resultTasks = controller.tasks;
+        
+        // Verify the result
+        System.assertEquals(2, resultTasks.size(), 'There should be 2 open tasks assigned to the current user.');
+        
+        // Check if the expected tasks are returned
+        for (Task task : resultTasks) {
+            System.assert(task.Status != 'Completed', 'Completed tasks should not be returned.');
+        }
+    }
+}
